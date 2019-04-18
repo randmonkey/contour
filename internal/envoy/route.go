@@ -27,10 +27,18 @@ import (
 // If len(services) is greater than one, the route's action will be a
 // weighted cluster.
 func RouteRoute(r *dag.Route, services []*dag.HTTPService) *route.Route_Route {
+
+	hashPolicySrcIP := route.RouteAction_HashPolicy{}
+	hashPolicySrcIP.PolicySpecifier = &route.RouteAction_HashPolicy_ConnectionProperties_{
+		ConnectionProperties: &route.RouteAction_HashPolicy_ConnectionProperties{SourceIp: true},
+	}
 	ra := route.RouteAction{
 		RetryPolicy:   retryPolicy(r),
 		Timeout:       timeout(r),
 		PrefixRewrite: r.PrefixRewrite,
+		HashPolicy: []*route.RouteAction_HashPolicy{
+			&hashPolicySrcIP,
+		},
 	}
 
 	if r.Websocket {
